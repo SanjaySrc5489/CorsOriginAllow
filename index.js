@@ -45,13 +45,9 @@ app.get('/proxy', async (req, res) => {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Accept': '*/*',
                     'Accept-Language': 'en-US,en;q=0.9',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'DNT': '1',
-                    'Connection': 'keep-alive',
-                    'Upgrade-Insecure-Requests': '1',
-                    'Referer': new URL(targetUrl).origin,
+                    'Cache-Control': 'no-cache',
                 },
-                timeout: 15000, // 15 seconds timeout
+                timeout: 30000, // 30 seconds timeout
                 maxRedirects: 5,
                 responseType: 'arraybuffer', // Handle binary data (images)
                 validateStatus: function (status) {
