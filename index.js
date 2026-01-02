@@ -16,8 +16,48 @@ app.get('/', (req, res) => {
     res.json({
         status: 'ok',
         message: 'CORS Proxy Server is running',
-        usage: 'Send requests to /proxy?url=YOUR_URL'
+        usage: {
+            proxy: '/proxy?url=YOUR_URL',
+            tmdb: '/tmdb/YOUR_TMDB_PATH?api_key=YOUR_KEY'
+        }
     });
+});
+
+// Dedicated TMDB API proxy endpoint
+app.get('/tmdb/*', async (req, res) => {
+    // Extract the TMDB path from the URL
+    const tmdbPath = req.params[0];
+    const queryString = new URLSearchParams(req.query).toString();
+    const tmdbUrl = `https://api.themoviedb.org/3/${tmdbPath}${queryString ? '?' + queryString : ''}`;
+
+    console.log(`[TMDB] Fetching: ${tmdbUrl}`);
+
+    try {
+        const response = await axios.get(tmdbUrl, {
+            headers: {
+                'Accept': 'application/json',
+            },
+            timeout: 10000, // 10 seconds for API calls
+        });
+
+        console.log(`[TMDB] Success: ${response.status}`);
+
+        // Set CORS headers
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.set('Access-Control-Allow-Headers', 'Content-Type');
+        res.set('Content-Type', 'application/json');
+        res.set('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+
+        res.status(response.status).json(response.data);
+
+    } catch (error) {
+        console.error(`[TMDB] Error: ${error.message}`);
+        res.status(error.response?.status || 500).json({
+            error: 'Failed to fetch from TMDB',
+            message: error.message
+        });
+    }
 });
 
 // Main proxy endpoint with improved error handling
